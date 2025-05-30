@@ -23,11 +23,13 @@ app.post('/import', (req, res) => {
     }
 
     const uploadedFile = req.files.csvfile;
+    const filenameGen =
+      uploadedFile.name.replace(".csv", "") + Date.now() + ".csv";
 
     const uploadPath = path.join(
       __dirname,
       process.env.UPLOAD_FILE_PATH,
-      uploadedFile.name.replace('.csv', '') + Date.now() + '.csv'
+      filenameGen
     );
 
     // Create 'uploads' directory if it doesn't exist
@@ -41,13 +43,13 @@ app.post('/import', (req, res) => {
       }
 
       Task.create({
-        fileName: uploadedFile.name.replace(".csv", "") + Date.now() + ".csv",
+        fileName: filenameGen,
       });
 
       res.send({
         message: "File uploaded successfully!",
-        fileName: uploadedFile.name,
-        path: `/${process.env.UPLOAD_FILE_PATH}/${uploadedFile.name}`,
+        fileName: filenameGen,
+        path: `/${process.env.UPLOAD_FILE_PATH}/${filenameGen}`,
       });
     });
 });

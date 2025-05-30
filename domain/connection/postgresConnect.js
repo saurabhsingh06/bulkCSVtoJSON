@@ -6,6 +6,7 @@ const { Sequelize } = require("sequelize");
 const sequelize = new Sequelize("kelp", "saurabh_singh", "pass123", {
   host: "localhost",
   dialect: "postgres",
+  logging: false,
 });
 
 const connectPostgres = async () => {

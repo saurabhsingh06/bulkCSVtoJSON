@@ -17,7 +17,7 @@ async function runJob() {
       await new Promise((res) => setTimeout(res, maxExecutionSecond * 1000));
 
 
-      if (Date.now() - start < (maxExecutionSecond * 1000) - 10000) {
+      if (Date.now() - start < (maxExecutionSecond * 1000) - 10000 || true) {
         break;
       }
       i++;
