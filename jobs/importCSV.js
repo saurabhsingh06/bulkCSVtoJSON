@@ -13,6 +13,7 @@ const { Op } = require('sequelize');
 const User = require("../models/User");
 
 console.log("Start importing");
+const redisClient = require("./../domain/connection/redisConnect");
 const maxImportCount = 100;
 
 async function readHeader(filePath) {
@@ -38,6 +39,12 @@ async function readCsvWithLimit(filePath, skip = 0, limit = Infinity, headers) {
 
   const result = [];
   let lineCount = 0;
+  const userAnalysis = {
+    "20": 0,
+    "40": 0,
+    "60": 0,
+    "above": 0
+  }
 
   for await (const line of rl) {
     if (lineCount < skip) {
@@ -63,6 +70,11 @@ async function readCsvWithLimit(filePath, skip = 0, limit = Infinity, headers) {
         });
       });
       obj.name = obj.name.firstName + " " + obj.name.lastName;
+      if (obj.age < 20) userAnalysis["20"]++;
+      else if (obj.age < 40) userAnalysis["40"]++;
+      else if (obj.age < 60) userAnalysis["60"]++;
+      else userAnalysis["above"]++;
+
       result.push(obj);
     } else {
       rl.close(); // Stop reading early
@@ -73,13 +85,19 @@ async function readCsvWithLimit(filePath, skip = 0, limit = Infinity, headers) {
     lineCount++;
   }
 
+  // Updating redis cache
+  await redisClient.incrBy('below20', userAnalysis["20"]);
+  await redisClient.incrBy("below40", userAnalysis["40"]);
+  await redisClient.incrBy("below60", userAnalysis["60"]);
+  await redisClient.incrBy("above", userAnalysis["above"]);
+  await redisClient.incrBy("total", result.length);
+
   return { result };
 }
 
 (async () => {
     try {
         await connectPostgres();
-        await require("./../domain/connection/redisConnect");
 
         while(true) {
             const pendingTask = await Task.findOne({

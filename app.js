@@ -7,6 +7,7 @@ const fileUpload = require('express-fileupload');
 const path = require("path");
 const fs = require("fs");
 const Task = require("./models/Task");
+const redisClient = require('./domain/connection/redisConnect');
 
 const app = express();
 app.use(cors());
@@ -52,6 +53,24 @@ app.post('/import', (req, res) => {
         path: `/${process.env.UPLOAD_FILE_PATH}/${filenameGen}`,
       });
     });
+});
+
+app.get('/user-analysis', async (req, res) => {
+  const twenty = await redisClient.get('below20');
+  const fourty = await redisClient.get("below40");
+  const sixty = await redisClient.get("below60");
+  const above = await redisClient.get("above");
+  const total = await redisClient.get("total");
+
+  res.status(200).json({
+    status: 1,
+    response: {
+      below20: (twenty / total) * 100,
+      below40: (fourty / total) * 100,
+      below60: (sixty / total) * 100,
+      above: (above / total) * 100
+    }
+  })
 });
 
 app.get('/', (req, res) => res.send("Hello from server"))
