@@ -12,7 +12,7 @@ const sequelize = new Sequelize("kelp", "saurabh_singh", "pass123", {
 const connectPostgres = async () => {
   try {
     await sequelize.authenticate();
-    await sequelize.sync({ alter: true }); 
+    await sequelize.sync({ force: true }); 
     console.log("Connected to PostgreSQL via Sequelize ✅");
   } catch (error) {
     console.error("Unable to connect to PostgreSQL ❌", error);
